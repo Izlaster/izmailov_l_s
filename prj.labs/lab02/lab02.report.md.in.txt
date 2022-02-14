@@ -2,7 +2,7 @@
 автор: Измайлов Л.С.
 дата: @time_stemp@
 
-<!-- url: https://gitlab.com/2021-misis-spring/polevoy_d_v/-/tree/master/prj.labs/lab02 -->
+url: https://github.com/Izlaster/izmailov_l_s/tree/main/build.vs.2019/prj.labs/lab01
 
 ### Задание
 1. В качестве тестового использовать изображение data/cross_0256x0256.png
