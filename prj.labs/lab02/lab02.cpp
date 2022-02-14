@@ -1,7 +1,7 @@
 #include <opencv2/opencv.hpp>
 
 int main() {
-	cv::Mat imgPng = cv::imread("D:/University/izmailov_l_s/data/cross_0256x0256.png");
+	cv::Mat imgPng = cv::imread("../data/cross_0256x0256.png");
 
 	std::vector<int> compression_params;
 	compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
@@ -17,7 +17,7 @@ int main() {
 	cv::Mat mergeImg_png;
 	cv::merge(channelsPNG, 3, mergeImg_png);
 
-	cv::Mat m1, m2, mazaika;
+	cv::Mat m1, m2, mazaika_png;
 
 	cv::Mat monoB_png[3] = { channelsPNG[0], zeroChannel, zeroChannel };
 	cv::Mat monoG_png[3] = { zeroChannel, channelsPNG[1], zeroChannel };
@@ -30,9 +30,9 @@ int main() {
 
 	cv::hconcat(mergeImg_png, mergeImgR_png, m1);
 	cv::hconcat(mergeImgG_png, mergeImgB_png, m2);
-	cv::vconcat(m1, m2, mazaika);
-	cv::imwrite("cross_0256x0256_png_channels.png", mazaika);
-	cv::imshow("cross_0256x0256_png_channels.png", mazaika);
+	cv::vconcat(m1, m2, mazaika_png);
+	cv::imwrite("cross_0256x0256_png_channels.png", mazaika_png);
+	cv::imshow("cross_0256x0256_png_channels.png", mazaika_png);
 
 	compression_params.pop_back();
 	compression_params.push_back(100);
@@ -43,9 +43,9 @@ int main() {
 	cv::split(imgJpg, channelsJPG);
 
 	cv::Mat mergeImg_jpg;
-	cv::merge(channelsPNG, 3, mergeImg_jpg);
-
 	cv::merge(channelsJPG, 3, mergeImg_jpg);
+
+	cv::Mat mazaika_jpg;
 
 	cv::Mat monoB_jpg[3] = { channelsJPG[0], zeroChannel, zeroChannel };
 	cv::Mat monoG_jpg[3] = { zeroChannel, channelsJPG[1], zeroChannel };
@@ -58,8 +58,12 @@ int main() {
 
 	cv::hconcat(mergeImg_jpg, mergeImgR_jpg, m1);
 	cv::hconcat(mergeImgG_jpg, mergeImgB_jpg, m2);
-	cv::vconcat(m1, m2, mazaika);
-	cv::imwrite("cross_0256x0256_jpg_channels.png", mazaika);
+	cv::vconcat(m1, m2, mazaika_jpg);
+	cv::imwrite("cross_0256x0256_jpg_channels.png", mazaika_jpg);
+
+	for (int i = 0; i < imgPng.cols * imgPng.rows; i++) {
+
+	}
 
 	cv::waitKey(0);
 }
