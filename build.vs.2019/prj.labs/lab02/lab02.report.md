@@ -1,8 +1,8 @@
 ## Работа 2. Исследование каналов и JPEG-сжатия
 автор: Измайлов Л.С.
-дата: 2022-02-14T15:03:32
+дата: 2022-02-14T21:10:09
 
-url: https://github.com/Izlaster/izmailov_l_s/tree/main/build.vs.2019/prj.labs/lab01
+url: https://github.com/Izlaster/izmailov_l_s/tree/main/prj.labs/lab02
 
 ### Задание
 1. В качестве тестового использовать изображение data/cross_0256x0256.png
@@ -34,8 +34,19 @@ url: https://github.com/Izlaster/izmailov_l_s/tree/main/build.vs.2019/prj.labs/l
 ```cpp
 #include <opencv2/opencv.hpp>
 
+void getHistNum(cv::Mat img, int* mas) {
+	for (int i = 0; i < img.rows * img.cols; i++) {
+		mas[i] = 0;
+	}
+	for (int i = 0; i < img.rows; i++) {
+		for (int j = 0; j < img.cols; j++) {
+			mas[img.at<uint8_t>(i, j)]++;
+		}
+	}
+}
+
 int main() {
-	cv::Mat imgPng = cv::imread("D:/University/izmailov_l_s/data/cross_0256x0256.png");
+	cv::Mat imgPng = cv::imread("../data/cross_0256x0256.png");
 
 	std::vector<int> compression_params;
 	compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
@@ -51,7 +62,7 @@ int main() {
 	cv::Mat mergeImg_png;
 	cv::merge(channelsPNG, 3, mergeImg_png);
 
-	cv::Mat m1, m2, mazaika;
+	cv::Mat m1, m2, mazaika_png;
 
 	cv::Mat monoB_png[3] = { channelsPNG[0], zeroChannel, zeroChannel };
 	cv::Mat monoG_png[3] = { zeroChannel, channelsPNG[1], zeroChannel };
@@ -64,9 +75,9 @@ int main() {
 
 	cv::hconcat(mergeImg_png, mergeImgR_png, m1);
 	cv::hconcat(mergeImgG_png, mergeImgB_png, m2);
-	cv::vconcat(m1, m2, mazaika);
-	cv::imwrite("cross_0256x0256_png_channels.png", mazaika);
-	cv::imshow("cross_0256x0256_png_channels.png", mazaika);
+	cv::vconcat(m1, m2, mazaika_png);
+	cv::imwrite("cross_0256x0256_png_channels.png", mazaika_png);
+	cv::imshow("cross_0256x0256_png_channels.png", mazaika_png);
 
 	compression_params.pop_back();
 	compression_params.push_back(100);
@@ -77,9 +88,9 @@ int main() {
 	cv::split(imgJpg, channelsJPG);
 
 	cv::Mat mergeImg_jpg;
-	cv::merge(channelsPNG, 3, mergeImg_jpg);
-
 	cv::merge(channelsJPG, 3, mergeImg_jpg);
+
+	cv::Mat mazaika_jpg;
 
 	cv::Mat monoB_jpg[3] = { channelsJPG[0], zeroChannel, zeroChannel };
 	cv::Mat monoG_jpg[3] = { zeroChannel, channelsJPG[1], zeroChannel };
@@ -92,8 +103,21 @@ int main() {
 
 	cv::hconcat(mergeImg_jpg, mergeImgR_jpg, m1);
 	cv::hconcat(mergeImgG_jpg, mergeImgB_jpg, m2);
-	cv::vconcat(m1, m2, mazaika);
-	cv::imwrite("cross_0256x0256_jpg_channels.png", mazaika);
+	cv::vconcat(m1, m2, mazaika_jpg);
+	cv::imwrite("cross_0256x0256_jpg_channels.png", mazaika_jpg);
+
+	int countBp[256];
+	int countGp[256];
+	int countRp[256];
+
+	getHistNum(channelsPNG[0], countBp);
+	getHistNum(channelsPNG[1], countGp);
+	getHistNum(channelsPNG[2], countRp);
+
+	for (size_t i = 0; i < 256; i++)
+	{
+		std::cout << i << " " << countBp[i] << std::endl;
+	}
 
 	cv::waitKey(0);
 }

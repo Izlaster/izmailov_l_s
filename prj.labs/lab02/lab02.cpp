@@ -1,5 +1,16 @@
 #include <opencv2/opencv.hpp>
 
+void getHistNum(cv::Mat img, int* mas) {
+	for (int i = 0; i < img.rows * img.cols; i++) {
+		mas[i] = 0;
+	}
+	for (int i = 0; i < img.rows; i++) {
+		for (int j = 0; j < img.cols; j++) {
+			mas[(int)img.at<uchar>(j, i)]++;
+		}
+	}
+}
+
 int main() {
 	cv::Mat imgPng = cv::imread("../data/cross_0256x0256.png");
 
@@ -61,8 +72,17 @@ int main() {
 	cv::vconcat(m1, m2, mazaika_jpg);
 	cv::imwrite("cross_0256x0256_jpg_channels.png", mazaika_jpg);
 
-	for (int i = 0; i < imgPng.cols * imgPng.rows; i++) {
+	int countBp[256];
+	int countGp[256];
+	int countRp[256];
 
+	getHistNum(channelsPNG[0], countBp);
+	getHistNum(channelsPNG[1], countGp);
+	getHistNum(channelsPNG[2], countRp);
+
+	for (size_t i = 0; i < 256; i++)
+	{
+		std::cout << i << " " << countBp[i] << std::endl;
 	}
 
 	cv::waitKey(0);
