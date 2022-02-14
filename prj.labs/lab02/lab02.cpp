@@ -1,12 +1,12 @@
 #include <opencv2/opencv.hpp>
 
 void getHistNum(cv::Mat img, int* mas) {
-	for (int i = 0; i < img.rows * img.cols; i++) {
+	for (int i = 0; i < 256; i++) {
 		mas[i] = 0;
 	}
 	for (int i = 0; i < img.rows; i++) {
 		for (int j = 0; j < img.cols; j++) {
-			mas[(int)img.at<uchar>(j, i)]++;
+			mas[img.at<uchar>(i, j)]++;
 		}
 	}
 }
@@ -43,7 +43,6 @@ int main() {
 	cv::hconcat(mergeImgG_png, mergeImgB_png, m2);
 	cv::vconcat(m1, m2, mazaika_png);
 	cv::imwrite("cross_0256x0256_png_channels.png", mazaika_png);
-	cv::imshow("cross_0256x0256_png_channels.png", mazaika_png);
 
 	compression_params.pop_back();
 	compression_params.push_back(100);
@@ -72,6 +71,10 @@ int main() {
 	cv::vconcat(m1, m2, mazaika_jpg);
 	cv::imwrite("cross_0256x0256_jpg_channels.png", mazaika_jpg);
 
+	int bin_w = 1;
+
+	cv::Mat histPNG(256, 256, CV_8UC3, cv::Scalar(255, 255, 255));
+
 	int countBp[256];
 	int countGp[256];
 	int countRp[256];
@@ -80,10 +83,109 @@ int main() {
 	getHistNum(channelsPNG[1], countGp);
 	getHistNum(channelsPNG[2], countRp);
 
-	for (size_t i = 0; i < 256; i++)
-	{
-		std::cout << i << " " << countBp[i] << std::endl;
+	int max = countBp[0];
+	for (int i = 1; i < 256; i++) {
+		if (max < countBp[i]) {
+			max = countBp[i];
+		}
 	}
+	for (int i = 1; i < 256; i++) {
+		if (max < countGp[i]) {
+			max = countGp[i];
+		}
+	}
+	for (int i = 1; i < 256; i++) {
+		if (max < countRp[i]) {
+			max = countRp[i];
+		}
+	}
+
+	for (int i = 0; i < 256; i++) {
+		countBp[i] = ((double)countBp[i] / max) * histPNG.rows;
+	}
+	for (int i = 0; i < 256; i++) {
+		countGp[i] = ((double)countGp[i] / max) * histPNG.rows;
+	}
+	for (int i = 0; i < 256; i++) {
+		countRp[i] = ((double)countRp[i] / max) * histPNG.rows;
+	}
+
+	for (int i = 0; i < 255; i++)
+	{
+		cv::line(histPNG, cv::Point(bin_w * (i), histPNG.rows - countBp[i]),
+			cv::Point(bin_w * (i + 1), histPNG.rows - countBp[i + 1]),
+			cv::Scalar(255, 0, 0), 1, 8, 0);
+	}
+	for (int i = 0; i < 255; i++)
+	{
+		cv::line(histPNG, cv::Point(bin_w * (i), histPNG.rows - countGp[i]),
+			cv::Point(bin_w * (i + 1), histPNG.rows - countGp[i + 1]),
+			cv::Scalar(0, 255, 0), 1, 8, 0);
+	}
+	for (int i = 0; i < 255; i++)
+	{
+		cv::line(histPNG, cv::Point(bin_w * (i), histPNG.rows - countRp[i]),
+			cv::Point(bin_w * (i + 1), histPNG.rows - countRp[i + 1]),
+			cv::Scalar(0, 0, 255), 1, 8, 0);
+	}
+
+	cv::Mat histJPG(256, 256, CV_8UC3, cv::Scalar(255, 255, 255));
+
+	getHistNum(channelsJPG[0], countBp);
+	getHistNum(channelsJPG[1], countGp);
+	getHistNum(channelsJPG[2], countRp);
+
+	max = countBp[0];
+	for (int i = 1; i < 256; i++) {
+		if (max < countBp[i]) {
+			max = countBp[i];
+		}
+	}
+	for (int i = 1; i < 256; i++) {
+		if (max < countGp[i]) {
+			max = countGp[i];
+		}
+	}
+	for (int i = 1; i < 256; i++) {
+		if (max < countRp[i]) {
+			max = countRp[i];
+		}
+	}
+
+	for (int i = 0; i < 256; i++) {
+		countBp[i] = ((double)countBp[i] / max) * histJPG.rows;
+	}
+	for (int i = 0; i < 256; i++) {
+		countGp[i] = ((double)countGp[i] / max) * histJPG.rows;
+	}
+	for (int i = 0; i < 256; i++) {
+		countRp[i] = ((double)countRp[i] / max) * histJPG.rows;
+	}
+
+	for (int i = 0; i < 255; i++)
+	{
+		cv::line(histJPG, cv::Point(bin_w * (i), histJPG.rows - countBp[i]),
+			cv::Point(bin_w * (i + 1), histJPG.rows - countBp[i + 1]),
+			cv::Scalar(255, 0, 0), 1, 8, 0);
+	}
+	for (int i = 0; i < 255; i++)
+	{
+		cv::line(histJPG, cv::Point(bin_w * (i), histJPG.rows - countGp[i]),
+			cv::Point(bin_w * (i + 1), histJPG.rows - countGp[i + 1]),
+			cv::Scalar(0, 255, 0), 1, 8, 0);
+	}
+	for (int i = 0; i < 255; i++)
+	{
+		cv::line(histJPG, cv::Point(bin_w * (i), histJPG.rows - countRp[i]),
+			cv::Point(bin_w * (i + 1), histJPG.rows - countRp[i + 1]),
+			cv::Scalar(0, 0, 255), 1, 8, 0);
+	}
+
+	cv::vconcat(imgPng, histPNG, m1);
+	cv::vconcat(imgJpg, histJPG, m2);
+	cv::hconcat(m1, m2, mazaika_png);
+	cv::imwrite("cross_0256x0256_hists.png", mazaika_png);
+	cv::imshow("cross_0256x0256_hists.png", mazaika_png);
 
 	cv::waitKey(0);
 }
