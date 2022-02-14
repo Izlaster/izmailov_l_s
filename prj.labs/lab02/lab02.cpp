@@ -12,7 +12,7 @@ void getHistNum(cv::Mat img, int* mas) {
 }
 
 int main() {
-	cv::Mat imgPng = cv::imread("../data/cross_0256x0256.png");
+	cv::Mat imgPng = cv::imread("../../../data/cross_0256x0256.png");
 
 	std::vector<int> compression_params;
 	compression_params.push_back(cv::IMWRITE_JPEG_QUALITY);
@@ -185,7 +185,6 @@ int main() {
 	cv::vconcat(imgJpg, histJPG, m2);
 	cv::hconcat(m1, m2, mazaika_png);
 	cv::imwrite("cross_0256x0256_hists.png", mazaika_png);
-	cv::imshow("cross_0256x0256_hists.png", mazaika_png);
 
 	cv::waitKey(0);
 }
