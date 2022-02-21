@@ -44,11 +44,11 @@ int main() {
 	cv::vconcat(m1, m2, mazaika_png);
 	cv::imwrite("cross_0256x0256_png_channels.png", mazaika_png);
 
-	compression_params.pop_back();
-	compression_params.push_back(100);
-	cv::imwrite("cross_0256x0256_100.jpg", imgPng, compression_params);
+	//compression_params.pop_back();
+	//compression_params.push_back(100);
+	//cv::imwrite("cross_0256x0256_100.jpg", imgPng, compression_params);
 
-	cv::Mat imgJpg = cv::imread("cross_0256x0256_100.jpg");
+	cv::Mat imgJpg = cv::imread("cross_0256x0256_025.jpg");
 	cv::Mat channelsJPG[3];
 	cv::split(imgJpg, channelsJPG);
 
