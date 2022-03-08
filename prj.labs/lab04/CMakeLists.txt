@@ -7,3 +7,5 @@ file(READ lab04.cpp cpp_source)
 configure_file(lab04.report.md.in.txt ${CMAKE_CURRENT_BINARY_DIR}/lab04.report.md @ONLY)
 add_custom_command(TARGET ${PROJECT_NAME}
   POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_BINARY_DIR}/lab04.report.md" "$<TARGET_FILE_DIR:${PROJECT_NAME}>")
+
+add_subdirectory(frames)
