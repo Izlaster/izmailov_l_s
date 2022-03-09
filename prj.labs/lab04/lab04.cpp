@@ -59,10 +59,10 @@ void labProcess(std::string videoName, int binary, int morghology, int binaryFla
 }
 
 int main() {
-	labProcess("video_money", 187, 140);
-	labProcess("1kRub", 50, 50);
-	labProcess("50Rub", 100, 50);
-	labProcess("200Rub", 135, 90);
-	labProcess("100Rub", 35, 460, cv::THRESH_BINARY_INV);
-	labProcess("100Usd", 87, 55, cv::THRESH_BINARY_INV);
+	//labProcess("video_money", 187, 140);
+	//labProcess("1kRub", 50, 50);
+	labProcess("50Rub", 100, 30);
+	//labProcess("200Rub", 135, 90);
+	//labProcess("100Rub", 35, 460, cv::THRESH_BINARY_INV);
+	//labProcess("100Usd", 87, 55, cv::THRESH_BINARY_INV);
 }
