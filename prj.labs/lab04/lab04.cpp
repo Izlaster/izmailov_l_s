@@ -18,13 +18,11 @@ void labProcess(std::string videoName, int binary, int morghology, int binaryFla
 
 		cv::Mat binarySrc;
 		cv::threshold(graySrc, binarySrc, binary, 255, binaryFlag);
-		//cv::imshow(videoName + "_binary_" + std::to_string(i + 1) + ".png", binarySrc);
 		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_binary_" + ".png", binarySrc);
 
 		cv::Mat morghologySrc;
 		cv::morphologyEx(binarySrc, morghologySrc, morphFlag, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(morghology, morghology)));
 		cv::morphologyEx(morghologySrc, morghologySrc, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(10, 10)));
-		//cv::imshow(videoName + "_morghology_" + std::to_string(i + 1) + ".png", morghologySrc);
 		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_morghology_" + ".png", morghologySrc);
 
 		cv::Mat srcOut(morghologySrc.size(), CV_32S);;
@@ -64,5 +62,5 @@ int main() {
 	labProcess("50Rub", 100, 30);
 	labProcess("200Rub", 135, 90);
 	labProcess("100Rub", 35, 460, cv::THRESH_BINARY_INV);
-	labProcess("100Usd", 87, 55, cv::THRESH_BINARY_INV);
+	labProcess("100Usd", 87, 215, cv::THRESH_BINARY_INV);
 }
