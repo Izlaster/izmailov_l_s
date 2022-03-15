@@ -1,6 +1,6 @@
 #include <opencv2/opencv.hpp>
 
-void labProcess(std::string videoName, int binary, int morghology, int binaryFlag = cv::THRESH_BINARY, int morphFlag = cv::MORPH_CLOSE) {
+void labProcess(std::string videoName, std::string maskName) {
 	cv::Mat src[3];
 	cv::VideoCapture cap("../../../data/lab_04_videos/" + videoName + ".mp4");
 	int frameAll = cap.get(cv::CAP_PROP_FRAME_COUNT);
@@ -16,12 +16,25 @@ void labProcess(std::string videoName, int binary, int morghology, int binaryFla
 		cv::cvtColor(graySrc, graySrc, cv::COLOR_BGR2GRAY);
 		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_gray_" + ".png", graySrc);
 
+		int whiteCol = 0;
+		for (int j = 0; j < graySrc.rows; j++) {
+			for (int l = 0; l < graySrc.cols; l++) {
+				if (graySrc.at<uint8_t>(j, l) >= 95) {
+					whiteCol++;
+				}
+			}
+		}
+		int binaryFlag;
+		if (whiteCol > (graySrc.rows * graySrc.cols - (graySrc.rows * graySrc.cols / 5)))
+			binaryFlag = cv::THRESH_BINARY_INV;
+		else
+			binaryFlag = cv::THRESH_BINARY;
 		cv::Mat binarySrc;
-		cv::threshold(graySrc, binarySrc, binary, 255, binaryFlag);
+		cv::threshold(graySrc, binarySrc, 100, 255, binaryFlag);
 		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_binary_" + ".png", binarySrc);
 
 		cv::Mat morghologySrc;
-		cv::morphologyEx(binarySrc, morghologySrc, morphFlag, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(morghology, morghology)));
+		cv::morphologyEx(binarySrc, morghologySrc, cv::MORPH_CLOSE, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(80, 80)));
 		cv::morphologyEx(morghologySrc, morghologySrc, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(10, 10)));
 		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_morghology_" + ".png", morghologySrc);
 
@@ -52,15 +65,26 @@ void labProcess(std::string videoName, int binary, int morghology, int binaryFla
 		}
 		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_connectedComponents_" + ".png", outconnectedComponents);
 
+		cv::Mat mask = cv::imread("../../../data/lab_04_masks/" + maskName + std::to_string(i + 1) + ".png");
+		double percent = 0;
+		for (int j = 0; j < outconnectedComponents.rows; j++) {
+			for (int l = 0; l < outconnectedComponents.cols; l++) {
+				if (outconnectedComponents.at<uint8_t>(j, l) == mask.at<uint8_t>(j, l)) {
+					percent++;
+				}
+			}
+		}
+		std::cout << std::endl;
+		std::cout << percent / (outconnectedComponents.rows * outconnectedComponents.cols) * 100 << "%" << std::endl;
+
 		cv::waitKey(0);
 	}
 }
 
 int main() {
-	labProcess("video_money", 187, 140);
-	labProcess("1kRub", 50, 50);
-	labProcess("50Rub", 100, 30);
-	labProcess("200Rub", 135, 90);
-	labProcess("100Rub", 35, 460, cv::THRESH_BINARY_INV);
-	labProcess("100Usd", 87, 215, cv::THRESH_BINARY_INV);
+	labProcess("1kRub", "1kRub_mask_");
+	labProcess("50Rub", "50Rub_mask_");
+	labProcess("100Rub", "100Rub_mask_");
+	labProcess("100Usd", "100Usd_mask_");
+	labProcess("200Rub", "200Rub_mask_");
 }
