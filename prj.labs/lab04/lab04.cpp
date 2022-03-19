@@ -42,7 +42,7 @@ void labProcess(std::string videoName, std::string maskName) {
 		cv::Mat stats, centroids;
 		int nLabels = cv::connectedComponentsWithStats(morghologySrc, srcOut, stats, centroids);
 		
-		cv::Mat outconnectedComponents(morghologySrc.size(), CV_8UC3);
+		cv::Mat outconnectedComponents(morghologySrc.size(), CV_8UC1);
 		int labelMax = 1;
 		int max = 0;
 		for (int j = 1; j < nLabels; j++) {
