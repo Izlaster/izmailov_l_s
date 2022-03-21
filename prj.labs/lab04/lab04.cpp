@@ -41,8 +41,8 @@ void labProcess(std::string videoName, std::string maskName) {
 		cv::Mat srcOut(morghologySrc.size(), CV_32S);;
 		cv::Mat stats, centroids;
 		int nLabels = cv::connectedComponentsWithStats(morghologySrc, srcOut, stats, centroids);
-		
-		cv::Mat outconnectedComponents(morghologySrc.size(), CV_8UC1);
+
+		cv::Mat outconnectedComponents(morghologySrc.size(), CV_8UC3);
 		int labelMax = 1;
 		int max = 0;
 		for (int j = 1; j < nLabels; j++) {
@@ -77,14 +77,37 @@ void labProcess(std::string videoName, std::string maskName) {
 		std::cout << std::endl;
 		std::cout << percent / (outconnectedComponents.rows * outconnectedComponents.cols) * 100 << "%" << std::endl;
 
+		cv::cvtColor(mask, mask, cv::COLOR_BGR2GRAY);
+		cv::cvtColor(outconnectedComponents, outconnectedComponents, cv::COLOR_BGR2GRAY);
+		cv::Mat vizualErrors(mask.size(), CV_8UC3);
+		vizualErrors = 0;
+		for (int j = 0; j < mask.rows; j++)
+			for (int l = 0; l < mask.cols; l++) {
+				if (mask.at<uint8_t>(j, l) == outconnectedComponents.at<uint8_t>(j, l) && mask.at<uint8_t>(j, l) == 0) {
+					vizualErrors.at<cv::Vec3b>(j, l) += cv::Vec3b(0, 0, 0);
+				}
+				else if (mask.at<uint8_t>(j, l) == outconnectedComponents.at<uint8_t>(j, l) && mask.at<uint8_t>(j, l) == 255) {
+					vizualErrors.at<cv::Vec3b>(j, l) += cv::Vec3b(255, 255, 255);
+				}
+				else if (mask.at<uint8_t>(j, l) != outconnectedComponents.at<uint8_t>(j, l) && outconnectedComponents.at<uint8_t>(j, l) == 0) {
+					vizualErrors.at<cv::Vec3b>(j, l) += cv::Vec3b(255, 0, 0);
+				}
+				else if (mask.at<uint8_t>(j, l) != outconnectedComponents.at<uint8_t>(j, l) && mask.at<uint8_t>(j, l) == 0) {
+					vizualErrors.at<cv::Vec3b>(j, l) += cv::Vec3b(0, 0, 255);
+				}
+			}
+		cv::Mat vizual;
+		addWeighted(src[i], 0.5, vizualErrors, 0.5, 0.0, vizual);
+		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_visual_" + ".png", vizual);
+
 		cv::waitKey(0);
 	}
 }
 
 int main() {
-	labProcess("1kRub", "1kRub_mask_");
-	labProcess("50Rub", "50Rub_mask_");
-	labProcess("100Rub", "100Rub_mask_");
-	labProcess("100Usd", "100Usd_mask_");
+	//labProcess("1kRub", "1kRub_mask_");
+	//labProcess("50Rub", "50Rub_mask_");
+	//labProcess("100Rub", "100Rub_mask_");
+	//labProcess("100Usd", "100Usd_mask_");
 	labProcess("200Rub", "200Rub_mask_");
 }
