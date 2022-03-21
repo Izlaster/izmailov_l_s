@@ -105,9 +105,9 @@ void labProcess(std::string videoName, std::string maskName) {
 }
 
 int main() {
-	//labProcess("1kRub", "1kRub_mask_");
-	//labProcess("50Rub", "50Rub_mask_");
-	//labProcess("100Rub", "100Rub_mask_");
-	//labProcess("100Usd", "100Usd_mask_");
+	labProcess("1kRub", "1kRub_mask_");
+	labProcess("50Rub", "50Rub_mask_");
+	labProcess("100Rub", "100Rub_mask_");
+	labProcess("100Usd", "100Usd_mask_");
 	labProcess("200Rub", "200Rub_mask_");
 }
