@@ -38,7 +38,7 @@ void labProcess(std::string videoName, std::string maskName) {
 		cv::morphologyEx(morghologySrc, morghologySrc, cv::MORPH_OPEN, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(10, 10)));
 		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_morghology_" + ".png", morghologySrc);
 
-		cv::Mat srcOut(morghologySrc.size(), CV_32S);;
+		cv::Mat srcOut(morghologySrc.size(), CV_32S);
 		cv::Mat stats, centroids;
 		int nLabels = cv::connectedComponentsWithStats(morghologySrc, srcOut, stats, centroids);
 
