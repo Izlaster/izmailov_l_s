@@ -19,7 +19,7 @@ void labProcess(std::string videoName, std::string maskName) {
 		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_gray_" + ".png", graySrc);
 
 		cv::Mat gaussSrc;
-		cv::GaussianBlur(graySrc, gaussSrc, cv::Size(7, 11), 9, 3);
+		cv::GaussianBlur(graySrc, gaussSrc, cv::Size(3, 3), 9, 3);
 		cv::imshow("frames/" + videoName + "_" + std::to_string(i + 1) + "_gaussSrc_" + ".png", gaussSrc);
 
 		cv::Mat cannySrc;
@@ -46,92 +46,23 @@ void labProcess(std::string videoName, std::string maskName) {
 		}
 		std::cout << contours.size() << "  <-  LOLOLOLOLLOLOLOLOLOLOLLOLOOLOLOLOLOL" << std::endl;
 
-		cv::Mat rez = morghologySrc.clone();
-		rez = 0;
-		if (contours.size() == 1) {
-			for (int y = 0; y < contours[0].size(); y++) {
-				cv::line(rez, contours[0][y], contours[0][y], cv::Scalar(255, 255, 255));
-			}
-		}
-		else
-		{
-			int maxS = 0, maxI = 0;
-			for (int y = 0; y < contours.size(); y++) {
-				if (contours[y].size() > maxS) {
-					maxS = contours[y].size();
-					maxI = y;
-				}
-			}
-			for (int y = 0; y < contours[maxI].size(); y++) {
-				cv::line(rez, contours[maxI][y], contours[maxI][y], cv::Scalar(255, 255, 255));
-			}
+		cv::Mat afterContours = morghologySrc.clone();
+		afterContours = 0;
+
+		std::vector<std::vector<cv::Point>> approx;
+		std::vector<cv::Point> approxTmp;
+		for (int y = 0; y < contours.size(); y++) {
+			approxPolyDP(contours[y], approxTmp, arcLength(contours[y], true) * 0.01, true);
+			approx.push_back(approxTmp);
 		}
 
-		cv::resize(rez, rez, cv::Size(), 2, 2);
-		cv::imshow("frames/" + videoName + "_" + std::to_string(i + 1) + "_rez_" + ".png", rez);
-		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_rez_" + ".png", rez);
+		int idx = 0;
+		for (; idx >= 0; idx = findContoursSrc[idx][0]) {
+			cv::drawContours(afterContours, approx, idx, cv::Scalar(255, 255, 255));
+		}
 
-		//cv::Mat srcOut(morghologySrc.size(), CV_32S);;
-		//cv::Mat stats, centroids;
-		//int nLabels = cv::connectedComponentsWithStats(morghologySrc, srcOut, stats, centroids);
-
-		//cv::Mat outconnectedComponents(morghologySrc.size(), CV_8UC3);
-		//int labelMax = 1;
-		//int max = 0;
-		//for (int j = 1; j < nLabels; j++) {
-		//	if (max > stats.at<int>(j, cv::CC_STAT_AREA)) {
-		//		max = stats.at<int>(j, cv::CC_STAT_AREA);
-		//		labelMax = j;
-		//	}
-		//}
-		//std::vector<cv::Vec3b> colors(nLabels);
-		//for (int j = 1; j < nLabels; j++) {
-		//	colors[j] = cv::Vec3b(0, 0, 0);
-		//}
-		//colors[labelMax] = cv::Vec3b(255, 255, 255);
-		//for (int j = 0; j < srcOut.rows; j++) {
-		//	for (int l = 0; l < srcOut.cols; l++)
-		//	{
-		//		int label = srcOut.at<int>(j, l);
-		//		outconnectedComponents.at<cv::Vec3b>(j, l) = colors[label];
-		//	}
-		//}
-		//cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_connectedComponents_" + ".png", outconnectedComponents);
-
-		//cv::Mat mask = cv::imread("../../../data/lab_04_masks/" + maskName + std::to_string(i + 1) + ".png");
-		//double percent = 0;
-		//for (int j = 0; j < outconnectedComponents.rows; j++) {
-		//	for (int l = 0; l < outconnectedComponents.cols; l++) {
-		//		if (outconnectedComponents.at<uint8_t>(j, l) == mask.at<uint8_t>(j, l)) {
-		//			percent++;
-		//		}
-		//	}
-		//}
-		//std::cout << std::endl;
-		//std::cout << percent / (outconnectedComponents.rows * outconnectedComponents.cols) * 100 << "%" << std::endl;
-
-		//cv::cvtColor(mask, mask, cv::COLOR_BGR2GRAY);
-		//cv::cvtColor(outconnectedComponents, outconnectedComponents, cv::COLOR_BGR2GRAY);
-		//cv::Mat vizualErrors(mask.size(), CV_8UC3);
-		//vizualErrors = 0;
-		//for (int j = 0; j < mask.rows; j++)
-		//	for (int l = 0; l < mask.cols; l++) {
-		//		if (mask.at<uint8_t>(j, l) == outconnectedComponents.at<uint8_t>(j, l) && mask.at<uint8_t>(j, l) == 0) {
-		//			vizualErrors.at<cv::Vec3b>(j, l) += cv::Vec3b(0, 0, 0);
-		//		}
-		//		else if (mask.at<uint8_t>(j, l) == outconnectedComponents.at<uint8_t>(j, l) && mask.at<uint8_t>(j, l) == 255) {
-		//			vizualErrors.at<cv::Vec3b>(j, l) += cv::Vec3b(255, 255, 255);
-		//		}
-		//		else if (mask.at<uint8_t>(j, l) != outconnectedComponents.at<uint8_t>(j, l) && outconnectedComponents.at<uint8_t>(j, l) == 0) {
-		//			vizualErrors.at<cv::Vec3b>(j, l) += cv::Vec3b(255, 0, 0);
-		//		}
-		//		else if (mask.at<uint8_t>(j, l) != outconnectedComponents.at<uint8_t>(j, l) && mask.at<uint8_t>(j, l) == 0) {
-		//			vizualErrors.at<cv::Vec3b>(j, l) += cv::Vec3b(0, 0, 255);
-		//		}
-		//	}
-		//cv::Mat vizual;
-		//addWeighted(src[i], 0.5, vizualErrors, 0.5, 0.0, vizual);
-		//cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_visual_" + ".png", vizual);
+		cv::resize(afterContours, afterContours, cv::Size(), 2, 2);
+		cv::imshow("frames/" + videoName + "_" + std::to_string(i + 1) + "_cornerSub_" + ".png", afterContours);
 
 		cv::waitKey(0);
 	}

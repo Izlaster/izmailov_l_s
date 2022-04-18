@@ -5,4 +5,4 @@
 [02](prj.labs/lab02/lab02.report.md.in.txt) - исследование каналов и JPEG-сжатия    
 [03](prj.labs/lab03/lab03.report.md.in.txt) - яркостные преобразования    
 [04](prj.labs/lab04/lab04.report.md.in.txt) - детектирование границ документов на кадрах видео №1    
-[05](prj.labs/lab04/lab04.report.md.in.txt) - детектирование границ документов на кадрах видео №2    
+[05](prj.labs/lab04/lab05.report.md.in.txt) - детектирование границ документов на кадрах видео №2    
