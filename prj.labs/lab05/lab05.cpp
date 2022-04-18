@@ -23,7 +23,7 @@ void labProcess(std::string videoName, std::string maskName) {
 		cv::imshow("frames/" + videoName + "_" + std::to_string(i + 1) + "_gaussSrc_" + ".png", gaussSrc);
 
 		cv::Mat cannySrc;
-		cv::Canny(gaussSrc, cannySrc, 55, 105);
+		cv::Canny(gaussSrc, cannySrc, 30, 105);
 		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_cannySrc_" + ".png", cannySrc);
 
 		cv::Mat morghologySrc;
