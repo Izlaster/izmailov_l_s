@@ -20,7 +20,7 @@ void labProcess(std::string videoName, std::string maskName) {
 
 		cv::Mat gaussSrc;
 		cv::GaussianBlur(graySrc, gaussSrc, cv::Size(3, 3), 9, 3);
-		cv::imshow("frames/" + videoName + "_" + std::to_string(i + 1) + "_gaussSrc_" + ".png", gaussSrc);
+		//cv::imshow("frames/" + videoName + "_" + std::to_string(i + 1) + "_gaussSrc_" + ".png", gaussSrc);
 
 		cv::Mat cannySrc;
 		cv::Canny(gaussSrc, cannySrc, 30, 105);
@@ -56,13 +56,51 @@ void labProcess(std::string videoName, std::string maskName) {
 			approx.push_back(approxTmp);
 		}
 
-		int idx = 0;
-		for (; idx >= 0; idx = findContoursSrc[idx][0]) {
-			cv::drawContours(afterContours, approx, idx, cv::Scalar(255, 255, 255));
+		int maxS = 0, maxI = 0;
+		if (contours.size() == 1) {
+			for (int y = 0; y < 4; y++) {
+				cv::line(afterContours, approx[0][y], approx[0][(y + 1) % 4], cv::Scalar(255, 255, 255));
+			}
+		}
+		else {
+			for (int y = 0; y < contours.size(); y++) {
+				if (contours[y].size() > maxS) {
+					maxS = contours[y].size();
+					maxI = y;
+				}
+			}
+			for (int y = 0; y < 4; y++) {
+				cv::line(afterContours, approx[maxI][y], approx[maxI][(y + 1) % 4], cv::Scalar(255, 255, 255));
+			}
 		}
 
-		cv::resize(afterContours, afterContours, cv::Size(), 2, 2);
-		cv::imshow("frames/" + videoName + "_" + std::to_string(i + 1) + "_cornerSub_" + ".png", afterContours);
+		cv::Mat mask = cv::imread("../../../data/lab_05_masks/" + maskName + std::to_string(i + 1) + ".png");
+		cv::cvtColor(mask, mask, cv::COLOR_BGR2GRAY);
+		cv::threshold(mask, mask, 100, 255, cv::THRESH_BINARY);
+		cv::morphologyEx(mask, mask, cv::MORPH_DILATE, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5)));
+		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_mask_" + ".png", mask);
+		cv::resize(mask, mask, cv::Size(), 0.25, 0.25);
+		cv::Mat vizualErrors(afterContours.size(), CV_8UC3);
+		vizualErrors = 0;
+		for (int j = 0; j < afterContours.rows; j++)
+			for (int l = 0; l < afterContours.cols; l++) {
+				if (mask.at<uint8_t>(j, l) == 255){
+					vizualErrors.at<cv::Vec3b>(j, l) = cv::Vec3b(255, 255, 255);
+				}
+				if (mask.at< uint8_t>(j, l) == afterContours.at<uint8_t>(j, l) && mask.at<uint8_t>(j, l) == 0) {
+					vizualErrors.at<cv::Vec3b>(j, l) = cv::Vec3b(0, 0, 0);
+				}
+				else if (mask.at<uint8_t>(j, l) == afterContours.at<uint8_t>(j, l) && mask.at<uint8_t>(j, l) == 255) {
+					vizualErrors.at<cv::Vec3b>(j, l) = cv::Vec3b(0, 255, 0);
+				}
+				else if (mask.at<uint8_t>(j, l) != afterContours.at<uint8_t>(j, l) && afterContours.at<uint8_t>(j, l) == 255) {
+					vizualErrors.at<cv::Vec3b>(j, l) = cv::Vec3b(0, 0, 255);
+				}
+			}
+		cv::resize(vizualErrors, vizualErrors, cv::Size(), 4, 4);
+		cv::Mat vizual;
+		addWeighted(src[i], 0.5, vizualErrors, 0.5, 0.0, vizual);
+		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_vizual_" + ".png", vizual);
 
 		cv::waitKey(0);
 	}
