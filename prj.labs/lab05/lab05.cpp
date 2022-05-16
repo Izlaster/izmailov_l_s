@@ -113,4 +113,3 @@ int main() {
 	labProcess("100Usd", "100Usd_mask_");
 	labProcess("200Rub", "200Rub_mask_");
 }
-
