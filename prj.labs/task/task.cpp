@@ -18,6 +18,7 @@ int main() {
     }
 
     cv::imshow("screen", screen);
+    cv::imwrite("screen.png", screen * 255);
 
     cv::Mat I1(2, 2, CV_32FC1);
     I1 = 0;
@@ -48,14 +49,14 @@ int main() {
 
     filtImg1 = (filtImg1 + 1) / 2;
     cv::imshow("filtImg1", filtImg1);
-    cv::imwrite("filtImg1.png", filtImg1);
+    cv::imwrite("filtImg1.png", filtImg1 * 255);
 
     filtImg2 = (filtImg2 + 1) / 2;
     cv::imshow("filtImg2", filtImg2);
-    cv::imwrite("filtImg2.png", filtImg2);
+    cv::imwrite("filtImg2.png", filtImg2 * 255);
 
     cv::imshow("middle", middle);
-    cv::imwrite("middle.png", middle);
+    cv::imwrite("middle.png", middle * 255);
 
     cv::waitKey(0);
 }
