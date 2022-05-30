@@ -1,9 +1,19 @@
 #include <opencv2/opencv.hpp>
 
+long GetFileSize(std::string filename)
+{
+	struct stat stat_buf;
+	int rc = stat(filename.c_str(), &stat_buf);
+	return rc == 0 ? stat_buf.st_size : -1;
+}
+
+
 void labProcess(std::string videoName, std::string maskName) {
 	cv::Mat src[3];
 	cv::VideoCapture cap("../../../data/lab_04_videos/" + videoName + ".mp4");
 	int frameAll = cap.get(cv::CAP_PROP_FRAME_COUNT);
+
+	cv::FileStorage fs("../../../data/lab_05_coords.json", cv::FileStorage::READ);
 
 	for (int i = 0; i < 3; i++)
 	{
@@ -23,7 +33,7 @@ void labProcess(std::string videoName, std::string maskName) {
 		//cv::imshow("frames/" + videoName + "_" + std::to_string(i + 1) + "_gaussSrc_" + ".png", gaussSrc);
 
 		cv::Mat cannySrc;
-		cv::Canny(gaussSrc, cannySrc, 30, 105);
+		cv::Canny(gaussSrc, cannySrc, 30, 115);
 		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_cannySrc_" + ".png", cannySrc);
 
 		cv::Mat morghologySrc;
@@ -33,18 +43,6 @@ void labProcess(std::string videoName, std::string maskName) {
 		std::vector<cv::Vec4i> findContoursSrc;
 		std::vector<std::vector<cv::Point>> contours;
 		cv::findContours(morghologySrc, contours, findContoursSrc, cv::RETR_EXTERNAL, cv::CHAIN_APPROX_NONE);
-
-		//Õ≈ œ–» ŒÀ
-		std::cout << std::endl;
-		for (size_t y = 0; y < contours.size(); y++)
-		{
-			for (size_t z = 0; z < 4; z++)
-			{
-				std::cout << findContoursSrc[y][z] << std::endl;
-			}
-			std::cout << std::endl;
-		}
-		std::cout << contours.size() << "  <-  LOLOLOLOLLOLOLOLOLOLOLLOLOOLOLOLOLOL" << std::endl;
 
 		cv::Mat afterContours = morghologySrc.clone();
 		afterContours = 0;
@@ -74,30 +72,66 @@ void labProcess(std::string videoName, std::string maskName) {
 			}
 		}
 
-		cv::Mat mask = cv::imread("../../../data/lab_05_masks/" + maskName + std::to_string(i + 1) + ".png");
-		cv::cvtColor(mask, mask, cv::COLOR_BGR2GRAY);
-		cv::threshold(mask, mask, 100, 255, cv::THRESH_BINARY);
-		cv::morphologyEx(mask, mask, cv::MORPH_DILATE, cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5)));
-		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_mask_" + ".png", mask);
-		cv::resize(mask, mask, cv::Size(), 0.25, 0.25);
+		cv::resize(afterContours, afterContours, cv::Size(), 4, 4);
+		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_afterContours_" + ".png", afterContours);
+
+		cv::FileNode points_x, points_y;
+		std::vector<cv::Point> points_xy;
+		std::string root = videoName + "_" + std::to_string(i + 1) + "_original_" + ".png" +
+			std::to_string(GetFileSize("frames/" + videoName + "_" + std::to_string(i + 1) + "_original_" + ".png"));
+		points_x = fs[root]["regions"][0]["shape_attributes"]["all_points_x"];
+		points_y = fs[root]["regions"][0]["shape_attributes"]["all_points_y"];
+		for (int j = 0; j < 4; j++) {
+			points_xy.push_back(cv::Point(points_x[j], points_y[j]));
+		}
+
+		cv::Mat bestContours = afterContours.clone();
+		bestContours = 0;
+		for (int j = 0; j < 4; j++) {
+			cv::line(bestContours, points_xy[j], points_xy[(j + 1) % 4], cv::Scalar(255, 255, 255), 4);
+		}
+		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_bestContours_" + ".png", bestContours);
+
+		std::vector<std::vector<cv::Point>> bestContoursContours;
+		std::vector<cv::Vec4i> name;
+		cv::findContours(bestContours, bestContoursContours, name, cv::RETR_LIST, cv::CHAIN_APPROX_NONE);
+		double perimeter = cv::arcLength(bestContoursContours[0], true);
+		double mErr = 0, Err;
+		for (int j = 0; j < 4; j++) {
+			double distance = cv::norm(approx[maxI][j] - (points_xy[j] / 4));
+			Err = distance / perimeter;
+			if (Err > mErr) {
+				mErr = Err;
+			}
+		}
+		std::cout << std::endl;
+		std::cout << videoName + "_" + std::to_string(i + 1) + ".png" << std::endl;
+		std::cout.precision(2);
+		std::cout << mErr * 100 << "%" << std::endl;
+		std::cout << std::endl;
+		
 		cv::Mat vizualErrors(afterContours.size(), CV_8UC3);
 		vizualErrors = 0;
-		for (int j = 0; j < afterContours.rows; j++)
+		cv::threshold(afterContours, afterContours, 1, 255, cv::THRESH_BINARY);
+		for (int j = 0; j < afterContours.rows; j++) {
 			for (int l = 0; l < afterContours.cols; l++) {
-				if (mask.at<uint8_t>(j, l) == 255){
+				if (bestContours.at<uint8_t>(j, l) == 255) {
 					vizualErrors.at<cv::Vec3b>(j, l) = cv::Vec3b(255, 255, 255);
 				}
-				if (mask.at< uint8_t>(j, l) == afterContours.at<uint8_t>(j, l) && mask.at<uint8_t>(j, l) == 0) {
+				if (afterContours.at< uint8_t>(j, l) == afterContours.at<uint8_t>(j, l) && bestContours.at<uint8_t>(j, l) == 0) {
 					vizualErrors.at<cv::Vec3b>(j, l) = cv::Vec3b(0, 0, 0);
 				}
-				else if (mask.at<uint8_t>(j, l) == afterContours.at<uint8_t>(j, l) && mask.at<uint8_t>(j, l) == 255) {
+				if (bestContours.at<uint8_t>(j, l) == afterContours.at<uint8_t>(j, l) && bestContours.at<uint8_t>(j, l) == 255) {
 					vizualErrors.at<cv::Vec3b>(j, l) = cv::Vec3b(0, 255, 0);
 				}
-				else if (mask.at<uint8_t>(j, l) != afterContours.at<uint8_t>(j, l) && afterContours.at<uint8_t>(j, l) == 255) {
+				else if (bestContours.at<uint8_t>(j, l) != afterContours.at<uint8_t>(j, l) && afterContours.at<uint8_t>(j, l) == 255) {
 					vizualErrors.at<cv::Vec3b>(j, l) = cv::Vec3b(0, 0, 255);
 				}
 			}
-		cv::resize(vizualErrors, vizualErrors, cv::Size(), 4, 4);
+		}
+
+		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_vizualErrors_" + ".png", vizualErrors);
+
 		cv::Mat vizual;
 		addWeighted(src[i], 0.5, vizualErrors, 0.5, 0.0, vizual);
 		cv::imwrite("frames/" + videoName + "_" + std::to_string(i + 1) + "_vizual_" + ".png", vizual);
